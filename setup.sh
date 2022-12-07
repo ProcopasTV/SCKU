@@ -133,7 +133,7 @@ chrony_install() {
         systemctl enable chrony && systemctl restart chrony
     fi
     judge "Chrony 启动"
-    timedatectl set-timezone Asia/Jakarta
+    timedatectl set-timezone Asia/Shanghai
     echo -e "${OK} ${GreenBG} 等待时间同步 ${Font}"
     sleep 10
     chronyc sourcestats -v
@@ -195,19 +195,19 @@ basic_optimization() {
 
 config_exist_check() {
     if [[ -f "$1" ]]; then
-        echo -e "${OK} ${GreenBG} File konfigurasi lama terdeteksi, dan konfigurasi file lama dicadangkan secara otomatis ${Font}"
+        echo -e "${OK} ${GreenBG} 检测到旧配置文件，自动备份旧文件配置 ${Font}"
         cp "$1" "$1.$(date +%Y%m%d%H)"
-        echo -e "${OK} ${GreenBG} Konfigurasi lama dicadangkan ${Font}"
+        echo -e "${OK} ${GreenBG} 已备份旧配置 ${Font}"
     fi
 }
 
 domain_port_check() {
     read -rp "请输入TLS端口(默认443):" tspport
     [[ -z ${tspport} ]] && tspport="443"
-    read -rp "MASUKAN DOMAIN ANDA:sgdo1.skcnet.my.id):" domain
+    read -rp "请输入你的域名信息(例如:fk.gfw.com):" domain
     domain=$(echo "${domain}" | tr '[:upper:]' '[:lower:]')
     domain_ip=$(ping -q -c 1 -t 1 "${domain}" | grep PING | sed -e "s/).*//" | sed -e "s/.*(//")
-    echo -e "${OK} ${GreenBG} Memperoleh informasi ip jaringan publik, harap tunggu dengan sabar ${Font}"
+    echo -e "${OK} ${GreenBG} 正在获取 公网ip 信息，请耐心等待 ${Font}"
     local_ip=$(curl -s https://api64.ipify.org)
     echo -e "域名DNS解析IP：${domain_ip}"
     echo -e "本机IP: ${local_ip}"
@@ -275,7 +275,7 @@ prereqcheck() {
     if [[ -f ${tsp_conf} ]]; then
         service_status_check tls-shunt-proxy
     else
-        echo -e "${Error} ${RedBG} TLS-Shunt-ProxyKonfigurasi tidak normal, silakan coba instal ulang ${Font}"
+        echo -e "${Error} ${RedBG} TLS-Shunt-Proxy 配置异常，请尝试重新安装 ${Font}"
         exit 4
     fi
 }
@@ -296,8 +296,8 @@ trojan_reset() {
     [[ -z ${trojan_ws_mode} ]] && trojan_ws_mode=false
     case $trojan_ws_mode in
     [yY][eE][sS] | [yY])
-        tjwspath="/skcnet
-        echo -e "${OK} ${GreenBG} Trojan-Go WebSocket 模式开启，WSPATH: /skcnet} ${Font}"
+        tjwspath="/skcnet(head -n 10 /dev/urandom | md5sum | head -c ${random_num})/"
+        echo -e "${OK} ${GreenBG} Trojan-Go WebSocket 模式开启，WSPATH: /skcnet ${Font}"
         trojan_ws_mode=true
         ;;
     *)
@@ -339,7 +339,7 @@ EOF
 
 modify_trojan() {
     deployed_status_check
-    echo -e "${WARN} ${Yellow} 修改 Trojan-Go 配置将重置现有的代理配置信息 (Y/N) [N]? ${Font}"
+    echo -e "${WARN} ${Yellow} 修改 Trojan-Go 配置将重置现有的代理配置信息，是否继续 (Y/N) [N]? ${Font}"
     read -r modify_confirm
     [[ -z ${modify_confirm} ]] && modify_confirm="No"
     case $modify_confirm in
@@ -651,7 +651,7 @@ tsp_sync() {
         [[ -z $tjport ]] && trojan_tcp_mode=false
         [[ $trojan_ws_mode = null ]] && trojan_ws_mode=false
         [[ -z $tjwspath ]] && tjwspath=/skcnet
-        echo -e "检测到：Trojan-Go 代理：TCP：${Green}${trojan_tcp_mode}${Font} / WebSocket：${Green}${trojan_ws_mode}${Font} / 端口：${Green}${tjport}${Font} / WebSocket Path：${Green}${tjwspath}${Font}"
+        echo -e "检测到：Trojan-Go 代理：TCP：${Green}${trojan_tcp_mode}${Font} / WebSocket：${Green}${trojan_ws_mode}${Font} / 端口：${Green}${tjport}${Font} / WebSocket Path：${Green}/skcnet ${Font}"
     fi
 
     if [[ $v2ray_stat = "installed" && -f ${v2ray_conf} ]]; then
@@ -1012,7 +1012,7 @@ info_config() {
             echo -e "服务器端口: ${TSP_Port}" && echo -e "服务器地址: ${TSP_Domain}"
         [[ $trojan_tcp_mode = true ]] && echo -e "Trojan-Go 密码: ${tjpassword}"
         [[ $trojan_ws_mode = true ]] &&
-            echo -e "Trojan-Go WebSocket Path: /skcnet " && echo -e "Trojan-Go WebSocket Host: ${tjwshost}"
+            echo -e "Trojan-Go WebSocket Path: /skcnet" && echo -e "Trojan-Go WebSocket Host: ${tjwshost}"
     fi
 
     if [[ -f ${v2ray_conf} && $v2ray_stat = "installed" ]]; then
@@ -1045,8 +1045,8 @@ info_links() {
             echo -e " Shadowrocket 二维码：" &&
             qrencode -t ANSIUTF8 -s 1 -m 2 "trojan://${tjpassword}@${TSP_Domain}:${TSP_Port}?sni=${TSP_Domain}&peer=${TSP_Domain}&allowinsecure=0&mux=0#${HOSTNAME}-TCP"
         [[ $trojan_ws_mode = true ]] && echo -e "\n Trojan-Go WebSocket TLS 分享链接：" &&
-            echo -e " Trojan-Qt5 客户端：\n trojan://${tjpassword}@${TSP_Domain}:${TSP_Port}?sni=${TSP_Domain}&peer=${TSP_Domain}&allowinsecure=0&mux=1&ws=1&wspath=/skcnet&wshost=${TSP_Domain}#${HOSTNAME}-WS" &&
-            echo -e " Qv2ray 客户端（需安装 Trojan-Go 插件）：\n trojan-go://${tjpassword}@${TSP_Domain}:${TSP_Port}/?sni=${TSP_Domain}&type=ws&host=${TSP_Domain}&path=/skcnet#${HOSTNAME}-WS" &&
+            echo -e " Trojan-Qt5 客户端：\n trojan://${tjpassword}@${TSP_Domain}:${TSP_Port}?sni=${TSP_Domain}&peer=${TSP_Domain}&allowinsecure=0&mux=1&ws=1&wspath=${tjwspath}&wshost=${TSP_Domain}#${HOSTNAME}-WS" &&
+            echo -e " Qv2ray 客户端（需安装 Trojan-Go 插件）：\n trojan-go://${tjpassword}@${TSP_Domain}:${TSP_Port}/?sni=${TSP_Domain}&type=ws&host=${TSP_Domain}&path=${tjwspath}#${HOSTNAME}-WS" &&
             echo -e " Shadowrocket 二维码：" &&
             qrencode -t ANSIUTF8 -s 1 -m 2 "trojan://${tjpassword}@${TSP_Domain}:${TSP_Port}?peer=${TSP_Domain}&mux=1&plugin=obfs-local;obfs=websocket;obfs-host=${TSP_Domain};obfs-uri=${tjwspath}#${HOSTNAME}-WS"
         read -t 60 -n 1 -s -rp "按任意键继续（60s）..."
@@ -1093,7 +1093,7 @@ subscribe_links() {
             echo -e "trojan://${tjpassword}@${TSP_Domain}:${TSP_Port}?sni=${TSP_Domain}&peer=${TSP_Domain}&allowinsecure=0&mux=0#${HOSTNAME}-TCP" &&
             echo -e "trojan-go://${tjpassword}@${TSP_Domain}:${TSP_Port}/?sni=${TSP_Domain}&type=original&host=${TSP_Domain}#${HOSTNAME}-Trojan-Go-TCP"
         [[ $trojan_ws_mode = true ]] &&
-            echo -e "trojan-go://${tjpassword}@${TSP_Domain}:${TSP_Port}/?sni=${TSP_Domain}&type=ws&host=${TSP_Domain}&path=${tjwspath}#${HOSTNAME}-Trojan-Go-WS" &&
+            echo -e "trojan-go://${tjpassword}@${TSP_Domain}:${TSP_Port}/?sni=${TSP_Domain}&type=ws&host=${TSP_Domain}&path=$/skcnet#${HOSTNAME}-Trojan-Go-WS" &&
             echo -e "trojan://${tjpassword}@${TSP_Domain}:${TSP_Port}?peer=${TSP_Domain}&mux=1&plugin=obfs-local;obfs=websocket;obfs-host=${TSP_Domain};obfs-uri=${tjwspath}#${HOSTNAME}-Trojan-Go-WS"
     fi
 

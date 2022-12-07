@@ -339,7 +339,7 @@ EOF
 
 modify_trojan() {
     deployed_status_check
-    echo -e "${WARN} ${Yellow} 修改 Trojan-Go 配置将重置现有的代理配置信息，是否继续 (Y/N) [N]? ${Font}"
+    echo -e "${WARN} ${Yellow} 修改 Trojan-Go 配置将重置现有的代理配置信息 (Y/N) [N]? ${Font}"
     read -r modify_confirm
     [[ -z ${modify_confirm} ]] && modify_confirm="No"
     case $modify_confirm in

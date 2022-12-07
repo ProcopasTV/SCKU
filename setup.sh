@@ -296,7 +296,7 @@ trojan_reset() {
     [[ -z ${trojan_ws_mode} ]] && trojan_ws_mode=false
     case $trojan_ws_mode in
     [yY][eE][sS] | [yY])
-        tjwspath="/skcnet (head -n 10 /dev/urandom | md5sum | head -c ${random_num})/"
+        tjwspath="/skcnet
         echo -e "${OK} ${GreenBG} Trojan-Go WebSocket 模式开启，WSPATH: /skcnet} ${Font}"
         trojan_ws_mode=true
         ;;
@@ -341,7 +341,7 @@ modify_trojan() {
     deployed_status_check
     echo -e "${WARN} ${Yellow} 修改 Trojan-Go 配置将重置现有的代理配置信息，是否继续 (Y/N) [N]? ${Font}"
     read -r modify_confirm
-    [[ -z ${modify_confirm} ]] && modify_confirm="No"
+    [[ -z ${modify_confirm} ]] && modify_confirm="Yes"
     case $modify_confirm in
     [yY][eE][sS] | [yY])
         prereqcheck
@@ -354,7 +354,7 @@ modify_trojan() {
 
 trojan_sync() {
     [[ -z $tjport ]] && tjport=40001
-    [[ -z $tjwspath ]] && tjwspath=/trojan/none
+    [[ -z $tjwspath ]] && tjwspath=/skcnet
     [[ -z $trojan_tcp_mode ]] && trojan_tcp_mode=none
     [[ -z $trojan_ws_mode ]] && trojan_ws_mode=none
     if [[ ${trojan_tcp_mode} = true ]]; then
@@ -367,11 +367,11 @@ trojan_sync() {
         sed -i "/#Trojan_TCP_Port/c \\      #args: 127.0.0.1:${tjport} #Trojan_TCP_Port:${trojan_tcp_mode}" ${tsp_conf}
     fi
     if [[ ${trojan_ws_mode} = true ]]; then
-        sed -i "/#Trojan_WS_Path/c \\      - path: ${tjwspath} #Trojan_WS_Path" ${tsp_conf}
+        sed -i "/#Trojan_WS_Path/c \\      - path: /skcnet #Trojan_WS_Path" ${tsp_conf}
         sed -i "/handler: proxyPass #Trojan_WS/c \\        handler: proxyPass #Trojan_WS" ${tsp_conf}
         sed -i "/#Trojan_WS_Port/c \\        args: 127.0.0.1:${tjport} #Trojan_WS_Port:${trojan_ws_mode}" ${tsp_conf}
     else
-        sed -i "/#Trojan_WS_Path/c \\      #- path: ${tjwspath} #Trojan_WS_Path" ${tsp_conf}
+        sed -i "/#Trojan_WS_Path/c \\      #- path: /skcnet #Trojan_WS_Path" ${tsp_conf}
         sed -i "/handler: proxyPass #Trojan_WS/c \\        #handler: proxyPass #Trojan_WS" ${tsp_conf}
         sed -i "/#Trojan_WS_Port/c \\        #args: 127.0.0.1:${tjport} #Trojan_WS_Port:${trojan_ws_mode}" ${tsp_conf}
     fi
@@ -614,7 +614,7 @@ vhosts:
     protocols: tls12,tls13
     http:
       paths:
-      #- path: /trojan/none #Trojan_WS_Path
+      #- path: /skcnet #Trojan_WS_Path
         #handler: proxyPass #Trojan_WS
         #args: 127.0.0.1:40000 #Trojan_WS_Port:${trojan_ws_mode}
       #- path: /v2ray/none #V2Ray_WS_Path
@@ -650,7 +650,7 @@ tsp_sync() {
         judge "检测 Trojan-Go 配置"
         [[ -z $tjport ]] && trojan_tcp_mode=false
         [[ $trojan_ws_mode = null ]] && trojan_ws_mode=false
-        [[ -z $tjwspath ]] && tjwspath=/trojan/none
+        [[ -z $tjwspath ]] && tjwspath=/skcnet
         echo -e "检测到：Trojan-Go 代理：TCP：${Green}${trojan_tcp_mode}${Font} / WebSocket：${Green}${trojan_ws_mode}${Font} / 端口：${Green}${tjport}${Font} / WebSocket Path：${Green}${tjwspath}${Font}"
     fi
 
@@ -1012,7 +1012,7 @@ info_config() {
             echo -e "服务器端口: ${TSP_Port}" && echo -e "服务器地址: ${TSP_Domain}"
         [[ $trojan_tcp_mode = true ]] && echo -e "Trojan-Go 密码: ${tjpassword}"
         [[ $trojan_ws_mode = true ]] &&
-            echo -e "Trojan-Go WebSocket Path: ${tjwspath}" && echo -e "Trojan-Go WebSocket Host: ${tjwshost}"
+            echo -e "Trojan-Go WebSocket Path: /skcnet " && echo -e "Trojan-Go WebSocket Host: ${tjwshost}"
     fi
 
     if [[ -f ${v2ray_conf} && $v2ray_stat = "installed" ]]; then
@@ -1045,8 +1045,8 @@ info_links() {
             echo -e " Shadowrocket 二维码：" &&
             qrencode -t ANSIUTF8 -s 1 -m 2 "trojan://${tjpassword}@${TSP_Domain}:${TSP_Port}?sni=${TSP_Domain}&peer=${TSP_Domain}&allowinsecure=0&mux=0#${HOSTNAME}-TCP"
         [[ $trojan_ws_mode = true ]] && echo -e "\n Trojan-Go WebSocket TLS 分享链接：" &&
-            echo -e " Trojan-Qt5 客户端：\n trojan://${tjpassword}@${TSP_Domain}:${TSP_Port}?sni=${TSP_Domain}&peer=${TSP_Domain}&allowinsecure=0&mux=1&ws=1&wspath=${tjwspath}&wshost=${TSP_Domain}#${HOSTNAME}-WS" &&
-            echo -e " Qv2ray 客户端（需安装 Trojan-Go 插件）：\n trojan-go://${tjpassword}@${TSP_Domain}:${TSP_Port}/?sni=${TSP_Domain}&type=ws&host=${TSP_Domain}&path=${tjwspath}#${HOSTNAME}-WS" &&
+            echo -e " Trojan-Qt5 客户端：\n trojan://${tjpassword}@${TSP_Domain}:${TSP_Port}?sni=${TSP_Domain}&peer=${TSP_Domain}&allowinsecure=0&mux=1&ws=1&wspath=/skcnet&wshost=${TSP_Domain}#${HOSTNAME}-WS" &&
+            echo -e " Qv2ray 客户端（需安装 Trojan-Go 插件）：\n trojan-go://${tjpassword}@${TSP_Domain}:${TSP_Port}/?sni=${TSP_Domain}&type=ws&host=${TSP_Domain}&path=/skcnet#${HOSTNAME}-WS" &&
             echo -e " Shadowrocket 二维码：" &&
             qrencode -t ANSIUTF8 -s 1 -m 2 "trojan://${tjpassword}@${TSP_Domain}:${TSP_Port}?peer=${TSP_Domain}&mux=1&plugin=obfs-local;obfs=websocket;obfs-host=${TSP_Domain};obfs-uri=${tjwspath}#${HOSTNAME}-WS"
         read -t 60 -n 1 -s -rp "按任意键继续（60s）..."

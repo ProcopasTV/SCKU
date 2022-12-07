@@ -133,7 +133,7 @@ chrony_install() {
         systemctl enable chrony && systemctl restart chrony
     fi
     judge "Chrony 启动"
-    timedatectl set-timezone Asia/Shanghai
+    timedatectl set-timezone Asia/Jakarta
     echo -e "${OK} ${GreenBG} 等待时间同步 ${Font}"
     sleep 10
     chronyc sourcestats -v
@@ -341,7 +341,7 @@ modify_trojan() {
     deployed_status_check
     echo -e "${WARN} ${Yellow} 修改 Trojan-Go 配置将重置现有的代理配置信息，是否继续 (Y/N) [N]? ${Font}"
     read -r modify_confirm
-    [[ -z ${modify_confirm} ]] && modify_confirm="Yes"
+    [[ -z ${modify_confirm} ]] && modify_confirm="No"
     case $modify_confirm in
     [yY][eE][sS] | [yY])
         prereqcheck

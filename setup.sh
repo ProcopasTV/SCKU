@@ -1132,11 +1132,11 @@ menu_req_check() {
 
 menu() {
     deployed_status_check
-    echo -e "\n${Green}     TSP & Trojan-Go/V2Ray 部署脚本 版本: ${shell_version} ${Font}"
+    echo -e "\n${Green}     TSP & Trojan-Go/V2Ray skrip penerapan: ${shell_version} ${Font}"
     echo -e "${Yellow}       Telegram 交流群：https://Procopas${Font}\n"
     echo -e "——————————————————————部署管理——————————————————————"
     if [[ $tsp_stat = "installed" ]]; then
-        echo -e "${Green}1.${Font}  ${Yellow}卸载${Font} TLS-Shunt-Proxy（网站&自动管理证书）"
+        echo -e "${Green}1.${Font}  ${Yellow}卸载${Font} TLS-Shunt-Proxy（Sertifikat Secara Otomatis）"
     else
         echo -e "${Green}1.${Font}  安装 TLS-Shunt-Proxy（网站&自动管理证书）"
     fi
